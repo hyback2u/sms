@@ -19,7 +19,7 @@
 ### 3.1 系统首页
 - 访问路径（本地部署）：localhost:8080/sms
 - 管理员密码：王小龙/123456
-- 普通用户：小王/123456
+- 普通用户：小王/123456 
 
 ![image](https://user-images.githubusercontent.com/42307653/119770663-142eba80-beef-11eb-8770-f6919fe447ab.png)
 
