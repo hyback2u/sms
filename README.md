@@ -12,7 +12,10 @@
 - 插件：PageHelper分页插件
 - 环境：Jdk 1.8 + Tomcat 9.0.45 + Maven管理工具 + MySQL v5.7.33
 
-### 2.2 系统架构图
+### 2.2 数据库设计
+![image](https://user-images.githubusercontent.com/42307653/120094835-4b060a00-c155-11eb-877e-ac578682e0e2.png)
+
+### 2.3 系统架构图
 ![image](https://user-images.githubusercontent.com/42307653/120094572-a636fd00-c153-11eb-93ae-6566bbaca447.png)
 
 ## 3.系统功能演示
