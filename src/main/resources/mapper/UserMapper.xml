@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wxl.sms.dao.UserMapper">
+
+    <!--用于登录验证, 根据输入的用户名去数据库查询返回该用户用于对比-->
+    <select id="getUserByUsername" resultType="com.wxl.sms.bean.User">
+        select *
+        from tb_user
+        where username = #{username}
+    </select>
+
+    <!--获取系统所有用户, 用于页面显示-->
+    <select id="getAllUser" resultType="com.wxl.sms.bean.User">
+        select *
+        from tb_user
+    </select>
+
+    <!--添加用户-->
+    <insert id="addUser">
+        insert into tb_user(username, password, role)
+        values (#{username}, #{password}, #{role})
+    </insert>
+
+    <!--重置所有用户的密码-->
+    <update id="resetAllPassword">
+        update tb_user
+        set password = '123456';
+    </update>
+
+    <!--按照用户id重置某一用户密码-->
+    <update id="resetPasswordByUserId">
+        update tb_user
+        set password = '123456'
+        where id = #{id}
+    </update>
+
+    <!--按照用户id删除某一用户-->
+    <delete id="deleteUserByUserId">
+        delete
+        from tb_user
+        where id = #{id}
+    </delete>
+
+    <!--修改密码-->
+    <update id="updatePassword">
+        update tb_user
+        set password = #{password}
+        where id = #{id}
+    </update>
+
+    <!--获取当前系统中所有的管理员账户信息-->
+    <select id="getAllAdmin" resultType="com.wxl.sms.bean.User">
+        select *
+        from tb_user
+        where role = 'admin'
+    </select>
+
+    <!--根据用户id获取用户-->
+    <select id="getUserByUserId" resultType="com.wxl.sms.bean.User">
+        select *
+        from tb_user
+        where id = #{id}
+    </select>
+</mapper>

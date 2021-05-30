@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wxl.sms.dao.SaleMapper">
+
+    <!--增加一条销售记录-->
+    <insert id="insertSaleItemFinal">
+        INSERT INTO tb_sale(product_id, product_name, group_id,
+                            purchase_price, sale_price, sale_count, sale_volume, net_profit)
+        VALUES (#{productId}, #{productName}, #{groupId}, #{purchasePrice},
+                #{salePrice}, #{saleCount}, #{saleVolume}, #{netProfit})
+    </insert>
+
+    <!--
+        SELECT product_name AS '商品名称',
+        SUM(CASE WHEN group_id='2009' THEN sale_count ELSE 0 END) AS '售出数',
+        SUM(CASE WHEN group_id='2009' THEN sale_volume ELSE 0 END) AS '销售额',
+        SUM(CASE WHEN group_id='2009' THEN net_profit ELSE 0 END) AS '净利润'
+        FROM tb_sale GROUP BY product_name;
+    -->
+
+    <!--用于条件展示销售信息-->
+    <select id="getSaleInfoByCondition" resultType="com.wxl.sms.bean.to.Sale">
+        SELECT product_id AS productId,
+               SUM(sale_count) AS 'saleCount',
+               ROUND(SUM(net_profit), 2) AS 'netProfit'
+        FROM tb_sale
+        <where>
+            <if test="groupId != null">
+                product_id IN
+                (SELECT id FROM tb_product WHERE group_id = #{groupId})
+            </if>
+            <if test="startDate != null and startDate != ''">
+                AND generate_time &gt;= #{startDate}
+            </if>
+            <if test="endDate != null and endDate != ''">
+                AND generate_time &lt;= #{endDate}
+            </if>
+        </where>
+        GROUP BY product_id
+    </select>
+
+</mapper>

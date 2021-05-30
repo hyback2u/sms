@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wxl.sms.dao.ProviderMapper">
+    <!--用于显示商品分类信息(查询视图)-->
+    <sql id="withGroup_Column_List">
+       p.id,
+       p.group_id,
+       p.product_name,
+       p.yield_date,
+       p.product_factory,
+       p.purchase_price,
+       p.sale_price,
+       p.stock,
+       p.sale_count,
+       p.create_date,
+       g.id         gId,
+       g.group_name groupName
+    </sql>
+
+    <!--用于显示商品分类信息(结果集映射)-->
+    <resultMap id="productsWithGroup" type="com.wxl.sms.bean.Product">
+        <id column="id" property="id"/>
+        <result column="group_id" property="groupId"/>
+        <result column="product_name" property="productName"/>
+        <result column="yield_date" property="yieldDate"/>
+        <result column="product_factory" property="productFactory"/>
+        <result column="purchase_price" property="purchasePrice"/>
+        <result column="stock" property="stock"/>
+        <result column="sale_price" property="salePrice"/>
+        <result column="sale_count" property="saleCount"/>
+        <result column="create_date" property="createDate"/>
+
+        <!--级联结果集封装-->
+        <result column="gId" property="group.id"/>
+        <result column="groupName" property="group.groupName"/>
+    </resultMap>
+
+    <!--获取所有供应商List-->
+    <select id="getAllProviders" resultType="com.wxl.sms.bean.Provider">
+        select *
+        from tb_provider
+    </select>
+
+    <!--根据供应商id查询出该供应商供应的商品-->
+    <select id="getProviderRecordsByProviderId" resultMap="productsWithGroup">
+        select
+        <include refid="withGroup_Column_List"/>
+        from tb_product p
+        left join tb_group g
+        on g.id = p.group_id
+        where p.provider_id = #{providerId}
+        order by p.id
+    </select>
+
+    <!--根据供应商id查询出该供应商实体-->
+    <select id="getProviderByProviderId" resultType="com.wxl.sms.bean.Provider">
+        select *
+        from tb_provider
+        where id = #{providerId}
+    </select>
+
+    <!--根据供应商联系人电话号码查询出该供应商-->
+    <select id="getProviderByProviderPhoneNumber" resultType="com.wxl.sms.bean.Provider">
+        select *
+        from tb_provider
+        where contact_phone = #{phoneNumber}
+    </select>
+
+    <!--根据供应商id删除供应商-->
+    <delete id="deleteProviderByProviderId">
+        delete
+        from tb_provider
+        where id = #{providerId}
+    </delete>
+
+    <!--添加供应商-->
+    <insert id="addProvider">
+        insert into tb_provider(provider_name, provider_contact, contact_phone,
+                                provider_address)
+        values (#{providerName}, #{providerContact},
+                #{contactPhone}, #{providerAddress})
+    </insert>
+
+    <!--修改供应商-->
+    <update id="updateProvider">
+        update tb_provider
+        set provider_name=#{providerName},
+            provider_contact=#{providerContact},
+            contact_phone=#{contactPhone},
+            provider_address=#{providerAddress}
+        where id = #{id}
+    </update>
+</mapper>

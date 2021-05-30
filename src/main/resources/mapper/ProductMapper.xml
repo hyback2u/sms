@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wxl.sms.dao.ProductMapper">
+    <!--用于显示商品分类信息(查询视图)-->
+    <sql id="withGroup_Column_List">
+       p.id,
+       p.group_id,
+       p.product_name,
+       p.yield_date,
+       p.product_factory,
+       p.purchase_price,
+       p.sale_price,
+       p.stock,
+       p.sale_count,
+       p.create_date,
+       g.id         gId,
+       g.group_name groupName
+    </sql>
+
+    <!--用于显示商品分类信息(结果集映射)-->
+    <resultMap id="productsWithGroup" type="com.wxl.sms.bean.Product">
+        <id column="id" property="id"/>
+        <result column="group_id" property="groupId"/>
+        <result column="product_name" property="productName"/>
+        <result column="yield_date" property="yieldDate"/>
+        <result column="product_factory" property="productFactory"/>
+        <result column="purchase_price" property="purchasePrice"/>
+        <result column="stock" property="stock"/>
+        <result column="sale_price" property="salePrice"/>
+        <result column="sale_count" property="saleCount"/>
+        <result column="create_date" property="createDate"/>
+
+        <!--级联结果集封装-->
+        <result column="gId" property="group.id"/>
+        <result column="groupName" property="group.groupName"/>
+    </resultMap>
+
+    <!--注意这里不要写; 因为要分页(select * from tb_xxx; limit 0, ? 错误了呀 ~)-->
+    <!--2021年4月25日14:46:34
+    查询后返回的商品信息集合不是按照id排序的, 考虑是连接查询的问题,
+    这里我使用order by进行排序, 问题得到解决
+    (内部原理: 是由于startPage()后的查询是分页查询, 分页需要得到全部记录数等数据信息, 这里加了分页限制解决)
+    -->
+    <select id="getAllProducts" resultMap="productsWithGroup">
+        select
+        <include refid="withGroup_Column_List"/>
+        from tb_product p
+        left join tb_group g
+        on g.id = p.group_id
+        order by p.id
+    </select>
+
+    <!--用于搜索显示, 根据商品名称查询后显示-->
+    <select id="getProductByProductName" resultMap="productsWithGroup">
+        select
+        <include refid="withGroup_Column_List"/>
+        from tb_product p
+        left join tb_group g
+        on g.id = p.group_id
+        where p.product_name = #{productName}
+    </select>
+
+    <!--用于搜索显示, 根据商品类别查询后显示某一类的所有商品的集合
+    说明: 传入的是商品类别(group_name), 根据商品类别, 获取该类别下的所有商品集合
+    -->
+    <select id="getProductsByProductGroup" resultMap="productInfoUseGroup">
+        select *
+        from tb_product
+        where group_id = #{group_id}
+    </select>
+
+    <!--association分步查询-->
+    <resultMap id="productInfoUseGroup" type="com.wxl.sms.bean.Product">
+        <id column="id" property="id"/>
+        <result column="product_name" property="productName"/>
+        <result column="yield_date" property="yieldDate"/>
+        <result column="product_factory" property="productFactory"/>
+        <result column="purchase_price" property="purchasePrice"/>
+        <result column="stock" property="stock"/>
+        <result column="sale_price" property="salePrice"/>
+        <result column="sale_count" property="saleCount"/>
+
+        <association property="groupId" select="com.wxl.sms.dao.GroupMapper.getGroupByGroupId"
+                     column="group_id">
+        </association>
+    </resultMap>
+
+    <!--新增商品信息
+    仅仅从一个JavaBean参数中取值, 使用product.xxx是会报错的, 会提示没有setter/getter
+    -->
+    <insert id="addProduct">
+        insert into tb_product(product_name, group_id, provider_id, yield_date,
+                               product_factory, purchase_price, sale_price,
+                               stock)
+        values (#{productName}, #{groupId}, #{providerId},
+                #{yieldDate}, #{productFactory},
+                #{purchasePrice}, #{salePrice}, #{stock})
+    </insert>
+
+    <!--根据商品的编号获取到该商品的价格-->
+    <select id="getProductSalePriceByProductId" resultType="java.lang.Float">
+        select sale_price
+        from tb_product
+        where id = #{id}
+    </select>
+
+    <!--根据商品的编号获取到该商品(用于结算服务)-->
+    <select id="getProductByProductIdForCheckService" resultType="com.wxl.sms.bean.Product">
+        select *
+        from tb_product
+        where id = #{productId}
+    </select>
+
+
+    <!--按照商品id删除商品-->
+    <delete id="deleteProductByProductId">
+        delete
+        from tb_product
+        where id = #{productId}
+    </delete>
+
+    <!--按照商品id修改商品-->
+    <update id="updateProductByProductId">
+        update tb_product
+        set product_name=#{productName},
+            group_id=#{groupId},
+            yield_date=#{yieldDate},
+            product_factory=#{productFactory},
+            purchase_price=#{purchasePrice},
+            sale_price=#{salePrice},
+            stock=#{stock}
+        where id = #{id}
+    </update>
+
+    <!--根据商品id获取该商品对象-->
+    <select id="getProductByProductId" resultMap="productsWithGroup">
+        select
+        <include refid="withGroup_Column_List"/>
+        from tb_product p
+        left join tb_group g
+        on g.id = p.group_id
+        where p.id = #{productId}
+    </select>
+
+    <!--注意参数处理问题!!!-->
+    <!--(2021年4月30日01:34:09)用于搜索显示, 根据商品名称查询后显示 ===> PLUS-->
+    <select id="getProductByProductNameOrProductGroup" resultMap="productsWithGroup">
+        select
+        <include refid="withGroup_Column_List"/>
+        from tb_product p
+        left join tb_group g
+        on g.id = p.group_id
+        <where>
+            <if test="productName != null and productName != ''">
+                p.product_name = #{productName}
+            </if>
+            <if test="groupId != null and groupId != ''">
+                and g.id = #{groupId}
+            </if>
+        </where>
+        order by p.id
+    </select>
+
+    <!--更新id对应的商品库存-->
+    <!--*************************AND？？？？？？？？？？？？？？？****************************-->
+    <update id="updateProductStock">
+        UPDATE tb_product
+        SET sale_count=sale_count + #{saleCount} and
+                        stock=stock-#{saleCount}
+            WHERE id = #{productId}
+    </update>
+
+
+    <!--更新id对应的商品库存(PLUS)-->
+    <update id="updateProductStockPlus">
+        update tb_product
+        set sale_count = #{saleCount},
+                       stock = #{stock}
+        where id = #{productId}
+    </update>
+
+</mapper>

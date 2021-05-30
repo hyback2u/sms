@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wxl.sms.dao.GroupMapper">
+
+    <!--根据id查询分类信息-->
+    <select id="getGroupByGroupId" resultType="com.wxl.sms.bean.Group">
+        select *
+        from tb_group
+        where id = #{id}
+    </select>
+
+    <!--根据商品分类名称查询商品分类的时候还能把本类下的商品信息查询出来-->
+<!--    <select id="getGroupByGroupName" resultMap="groupWithProduct">-->
+<!--        select g.id         gId,-->
+<!--               g.group_name groupName,-->
+<!--               p.id         id,-->
+<!--               p.group_id,-->
+<!--               p.product_name,-->
+<!--               p.yield_date,-->
+<!--               p.product_factory,-->
+<!--               p.purchase_price,-->
+<!--               p.sale_price,-->
+<!--               p.stock,-->
+<!--               p.sale_count,-->
+<!--               p.createDate-->
+<!--        from tb_group g-->
+<!--                 left join tb_product p-->
+<!--                           on g.id = p.group_id-->
+<!--        where g.group_name = #{groupName}-->
+<!--    </select>-->
+
+    <!--获取所有的商品分类信息用于页面展示-->
+    <select id="getAllGroups" resultType="com.wxl.sms.bean.Group">
+        select *
+        from tb_group
+    </select>
+
+    <!--新增商品分类-->
+    <insert id="addGroup">
+        insert into tb_group(group_name)
+        values (#{groupName})
+    </insert>
+
+    <!--修改商品分类信息-->
+    <update id="updateGroup">
+        update tb_group
+        set group_name = #{groupName}
+        where id = #{id}
+    </update>
+
+    <!--根据id删除商品分类信息-->
+    <delete id="deleteGroupById">
+        delete
+        from tb_group
+        where id = #{id}
+    </delete>
+
+<!--    <resultMap id="groupWithProduct" type="com.wxl.sms.bean.Group">-->
+<!--        <id column="gId" property="id"/>-->
+<!--        <result column="groupName" property="groupName"/>-->
+
+<!--        &lt;!&ndash;嵌套结果集&ndash;&gt;-->
+<!--        <collection property="products" ofType="com.wxl.sms.bean.Product">-->
+<!--            <id column="id" property="id"/>-->
+<!--            <result column="product_name" property="productName"/>-->
+<!--            <result column="yield_date" property="yieldDate"/>-->
+<!--            <result column="product_factory" property="productFactory"/>-->
+<!--            <result column="purchase_price" property="purchasePrice"/>-->
+<!--            <result column="stock" property="stock"/>-->
+<!--            <result column="sale_price" property="salePrice"/>-->
+<!--            <result column="sale_count" property="saleCount"/>-->
+<!--        </collection>-->
+<!--    </resultMap>-->
+</mapper>
