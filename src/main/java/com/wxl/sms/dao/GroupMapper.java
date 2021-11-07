@@ -5,6 +5,8 @@ import com.wxl.sms.bean.Group;
 import java.util.List;
 
 /**
+ * 商品分组数据库层代码
+ *
  * @author wxl on 2021/4/25 1:20
  */
 public interface GroupMapper {
